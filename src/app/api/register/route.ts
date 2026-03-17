@@ -34,8 +34,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const { reference, ...rest } = body
     const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
-      ...body,
+      ...rest,
+      reference: reference ?? null,
       createdAt: serverTimestamp(),
     })
 

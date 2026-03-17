@@ -5,6 +5,7 @@ export type FormData = {
   mobile: string
   email: string
   city: string
+  reference: string
   emergencyName: string
   emergencyPhone: string
   medicalConditions: 'no' | 'yes'

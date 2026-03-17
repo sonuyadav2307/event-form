@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import type { FormData } from '@/types/form'
+import logo from "@/assets/logo.png"
 
 type Props = { onSubmit: (data: FormData) => Promise<void> }
 
@@ -13,7 +15,8 @@ export function EventForm({ onSubmit }: Props) {
     gender: '',
     mobile: '',
     email: '',
-    city: '',
+    city: 'Vadodara',
+    reference: '',
     emergencyName: '',
     emergencyPhone: '',
     medicalConditions: 'no',
@@ -28,6 +31,7 @@ export function EventForm({ onSubmit }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.consent) return
+    if (!form.fullName.trim() || !form.mobile.trim()) return
     setLoading(true)
     await onSubmit(form)
     setLoading(false)
@@ -38,6 +42,16 @@ export function EventForm({ onSubmit }: Props) {
       onSubmit={handleSubmit}
       className="space-y-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
     >
+      <div className="flex justify-center">
+        <Image
+          src={logo}
+          alt="Event A MANIA"
+          width={240}
+          height={120}
+          className="h-auto w-full max-w-[240px] object-contain"
+          priority
+        />
+      </div>
       {/* 2. Participant Details */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
@@ -46,7 +60,7 @@ export function EventForm({ onSubmit }: Props) {
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="sm:col-span-2">
             <span className="mb-1 block text-sm font-medium text-slate-700">
-              Full Name
+              Full Name <span className="text-red-600">*</span>
             </span>
             <input
               type="text"
@@ -90,7 +104,7 @@ export function EventForm({ onSubmit }: Props) {
           </label>
           <label>
             <span className="mb-1 block text-sm font-medium text-slate-700">
-              Mobile Number
+              Mobile Number <span className="text-red-600">*</span>
             </span>
             <input
               type="tel"
@@ -124,6 +138,18 @@ export function EventForm({ onSubmit }: Props) {
               onChange={(e) => update({ city: e.target.value })}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
               placeholder="City"
+            />
+          </label>
+          <label className="sm:col-span-2">
+            <span className="mb-1 block text-sm font-medium text-slate-700">
+              Reference <span className="text-slate-500">(Optional)</span>
+            </span>
+            <input
+              type="text"
+              value={form.reference}
+              onChange={(e) => update({ reference: e.target.value })}
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+              placeholder="How did you hear about this event?"
             />
           </label>
         </div>
@@ -242,7 +268,7 @@ export function EventForm({ onSubmit }: Props) {
       <div className="pt-2">
         <button
           type="submit"
-          disabled={loading || !form.consent}
+          disabled={loading || !form.consent || !form.fullName.trim() || !form.mobile.trim()}
           className="w-full rounded-lg bg-sky-600 px-4 py-3 font-medium text-white transition hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2 disabled:opacity-60"
         >
           {loading ? 'Submitting…' : 'Submit Registration'}

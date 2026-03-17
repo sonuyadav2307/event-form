@@ -12,6 +12,7 @@ export async function saveRegistration(data: FormData): Promise<string> {
     mobile: data.mobile,
     email: data.email || null,
     city: data.city,
+    reference: data.reference || null,
     emergencyName: data.emergencyName,
     emergencyPhone: data.emergencyPhone,
     medicalConditions: data.medicalConditions,
