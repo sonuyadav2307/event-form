@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Event registrations: anyone can create (submit form), no read/update/delete
+    match /registrations/{docId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+  }
+}
