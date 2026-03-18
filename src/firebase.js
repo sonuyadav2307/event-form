@@ -3,7 +3,6 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -28,8 +27,4 @@ const db = getFirestore(app);
 const auth =
   typeof window !== "undefined" ? getAuth(app) : undefined;
 
-/** Storage is only available in the browser (undefined on server / API routes). */
-const storage =
-  typeof window !== "undefined" ? getStorage(app) : undefined;
-
-export { app, db, auth, storage };
+export { app, db, auth };

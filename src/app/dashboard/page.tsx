@@ -59,31 +59,22 @@ const thClass =
   'sticky top-0 z-10 border-b border-slate-300 bg-slate-100 px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600'
 
 function PaymentProofCell({ row }: { row: RegistrationRecord }) {
-  const url = row.paymentScreenshotUrl ?? null
-  if (!url) return <span className="text-slate-500">—</span>
+  const dataUrl = row.paymentScreenshotDataUrl ?? null
+  if (!dataUrl) return <span className="text-slate-500">—</span>
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-sky-700 hover:bg-slate-50"
+    <button
+      type="button"
+      onClick={() => row.__openPaymentProof?.(dataUrl)}
+      className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-sky-700 hover:bg-slate-50"
+      title="Open payment proof"
     >
+      <img
+        src={dataUrl}
+        alt="Payment screenshot"
+        className="h-7 w-7 rounded object-cover"
+      />
       View
-      <svg
-        className="h-3.5 w-3.5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-        aria-hidden
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M10.5 7.5H7.2A1.2 1.2 0 006 8.7v8.1A1.2 1.2 0 007.2 18h8.1a1.2 1.2 0 001.2-1.2v-3.3"
-        />
-      </svg>
-    </a>
+    </button>
   )
 }
 
@@ -93,6 +84,10 @@ export default function DashboardPage() {
   const [checking, setChecking] = useState(true)
   const [signingOut, setSigningOut] = useState(false)
   const [rows, setRows] = useState<RegistrationRecord[]>([])
+  const [paymentProofOpen, setPaymentProofOpen] = useState(false)
+  const [paymentProofDataUrl, setPaymentProofDataUrl] = useState<string | null>(
+    null
+  )
   const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
     'loading'
   )
@@ -110,6 +105,25 @@ export default function DashboardPage() {
       return name.includes(q) || email.includes(q)
     })
   }, [rows, searchQuery])
+
+  const openPaymentProof = useCallback((dataUrl: string) => {
+    setPaymentProofDataUrl(dataUrl)
+    setPaymentProofOpen(true)
+  }, [])
+
+  const closePaymentProof = useCallback(() => {
+    setPaymentProofOpen(false)
+    setPaymentProofDataUrl(null)
+  }, [])
+
+  useEffect(() => {
+    if (!paymentProofOpen) return
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') closePaymentProof()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [paymentProofOpen, closePaymentProof])
 
   useEffect(() => {
     if (!auth) {
@@ -375,6 +389,12 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {filteredRows.map((row) => {
+                  // Attach an opener without changing the Firestore mapping type.
+                  const rowWithOpen = Object.assign(row, {
+                    __openPaymentProof: openPaymentProof,
+                  }) as RegistrationRecord & {
+                    __openPaymentProof: (dataUrl: string) => void
+                  }
                   const medical =
                     row.medicalConditions === 'yes' && row.medicalDetails
                       ? `Yes — ${row.medicalDetails}`
@@ -417,7 +437,7 @@ export default function DashboardPage() {
                         )}
                       </td>
                       <td className={`${cellClass} whitespace-nowrap`}>
-                        <PaymentProofCell row={row} />
+                        <PaymentProofCell row={rowWithOpen} />
                       </td>
                       <td className={`${cellClass} whitespace-nowrap`}>
                         <PaymentToggle
@@ -434,6 +454,40 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {paymentProofOpen && paymentProofDataUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Payment proof"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) closePaymentProof()
+          }}
+        >
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <div className="text-sm font-semibold text-slate-900">
+                Payment proof
+              </div>
+              <button
+                type="button"
+                onClick={closePaymentProof}
+                className="rounded-md px-2 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+            <div className="bg-slate-900 p-3">
+              <img
+                src={paymentProofDataUrl}
+                alt="Payment screenshot"
+                className="mx-auto max-h-[75vh] w-auto max-w-full rounded-lg bg-white object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

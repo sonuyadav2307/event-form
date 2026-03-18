@@ -13,8 +13,7 @@ export type PaymentStatus = 'paid' | 'unpaid'
 export type RegistrationRecord = {
   id: string
   paymentStatus: PaymentStatus
-  paymentScreenshotUrl?: string | null
-  paymentScreenshotPath?: string | null
+  paymentScreenshotDataUrl?: string | null
   fullName: string
   age: string
   gender: string
@@ -56,10 +55,8 @@ function mapDoc(id: string, d: DocumentData): RegistrationRecord {
   return {
     id,
     paymentStatus: mapPaymentStatus(d),
-    paymentScreenshotUrl:
-      d.paymentScreenshotUrl != null ? String(d.paymentScreenshotUrl) : null,
-    paymentScreenshotPath:
-      d.paymentScreenshotPath != null ? String(d.paymentScreenshotPath) : null,
+    paymentScreenshotDataUrl:
+      d.paymentScreenshotDataUrl != null ? String(d.paymentScreenshotDataUrl) : null,
     fullName: String(d.fullName ?? ''),
     age: String(d.age ?? ''),
     gender: String(d.gender ?? ''),

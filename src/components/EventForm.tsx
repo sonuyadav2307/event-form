@@ -6,12 +6,18 @@ import type { FormData } from '@/types/form'
 import logo from "@/assets/logo.png"
 import paymentQR from "@/assets/paymentQR.jpeg"
 
-type Props = { onSubmit: (data: FormData, paymentScreenshot?: File | null) => Promise<void> }
+type Props = {
+  onSubmit: (data: FormData, paymentScreenshotDataUrl?: string | null) => Promise<void>
+}
 
 export function EventForm({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false)
-  const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null)
-  const [paymentScreenshotError, setPaymentScreenshotError] = useState<string | null>(null)
+  const [paymentScreenshotDataUrl, setPaymentScreenshotDataUrl] = useState<
+    string | null
+  >(null)
+  const [paymentScreenshotError, setPaymentScreenshotError] = useState<
+    string | null
+  >(null)
   const [form, setForm] = useState<FormData>({
     fullName: '',
     age: '',
@@ -31,19 +37,43 @@ export function EventForm({ onSubmit }: Props) {
     setForm((prev) => ({ ...prev, ...f }))
   }
 
-  function setScreenshot(file: File | null) {
-    const MAX_BYTES = 2 * 1024 * 1024
+  async function setScreenshot(file: File | null) {
+    // Firestore document limit is ~1MiB; base64 expands size ~33%.
+    // Keep the raw file small so the resulting data URL stays safely under limit.
+    const MAX_BYTES = 600 * 1024
+
     if (!file) {
-      setPaymentScreenshot(null)
+      setPaymentScreenshotDataUrl(null)
       setPaymentScreenshotError(null)
       return
     }
-    if (file.size > MAX_BYTES) {
-      setPaymentScreenshot(null)
-      setPaymentScreenshotError('File must be 2MB or less.')
+
+    if (!file.type.startsWith('image/')) {
+      setPaymentScreenshotDataUrl(null)
+      setPaymentScreenshotError('Please upload an image file.')
       return
     }
-    setPaymentScreenshot(file)
+
+    if (file.size > MAX_BYTES) {
+      setPaymentScreenshotDataUrl(null)
+      setPaymentScreenshotError('Image must be 600KB or less.')
+      return
+    }
+
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = () => reject(new Error('Failed to read file'))
+      reader.onload = () => resolve(String(reader.result || ''))
+      reader.readAsDataURL(file)
+    })
+
+    if (!dataUrl.startsWith('data:image/')) {
+      setPaymentScreenshotDataUrl(null)
+      setPaymentScreenshotError('Invalid image format.')
+      return
+    }
+
+    setPaymentScreenshotDataUrl(dataUrl)
     setPaymentScreenshotError(null)
   }
 
@@ -53,7 +83,7 @@ export function EventForm({ onSubmit }: Props) {
     if (!form.fullName.trim() || !form.mobile.trim()) return
     if (paymentScreenshotError) return
     setLoading(true)
-    await onSubmit(form, paymentScreenshot)
+    await onSubmit(form, paymentScreenshotDataUrl)
     setLoading(false)
   }
 
@@ -295,9 +325,6 @@ export function EventForm({ onSubmit }: Props) {
           Scan the QR to pay. After payment, please enter your UPI/transaction reference in the
           “Reference” field (optional but recommended).
         </p>
-        <p className="text-sm text-slate-600">
-          After making payment, upload a screenshot of the payment success page.
-        </p>
         <div className="flex justify-center">
           <a
             href={paymentQR.src}
@@ -321,11 +348,11 @@ export function EventForm({ onSubmit }: Props) {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
+            onChange={(e) => void setScreenshot(e.target.files?.[0] ?? null)}
             className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
           />
-          {paymentScreenshot?.name && (
-            <p className="mt-1 text-xs text-slate-500">Selected: {paymentScreenshot.name}</p>
+          {paymentScreenshotDataUrl && !paymentScreenshotError && (
+            <p className="mt-1 text-xs text-slate-500">Screenshot attached.</p>
           )}
           {paymentScreenshotError && (
             <p className="mt-1 text-xs text-red-600">{paymentScreenshotError}</p>
