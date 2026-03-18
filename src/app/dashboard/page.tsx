@@ -6,6 +6,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth } from '@/firebase'
+import { deleteRegistration } from '@/lib/registration-delete'
 import { updateRegistrationPaymentStatus } from '@/lib/registration-payment'
 import {
   subscribeRegistrations,
@@ -100,6 +101,8 @@ export default function DashboardPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
 
   const filteredRows = useMemo(() => {
@@ -180,6 +183,26 @@ export default function DashboardPage() {
     },
     []
   )
+
+  const handleDelete = useCallback(async (row: RegistrationRecord) => {
+    const label = row.fullName ? `${row.fullName}${row.mobile ? ` (${row.mobile})` : ''}` : row.id
+    const ok = window.confirm(`Delete this registration?\n\n${label}\n\nThis cannot be undone.`)
+    if (!ok) return
+
+    setDeleteError(null)
+    setDeletingId(row.id)
+    try {
+      await deleteRegistration(row.id)
+      if (paymentProofOpen && paymentProofDataUrl && row.paymentScreenshotDataUrl === paymentProofDataUrl) {
+        closePaymentProof()
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Could not delete registration.'
+      setDeleteError(msg)
+    } finally {
+      setDeletingId(null)
+    }
+  }, [closePaymentProof, paymentProofDataUrl, paymentProofOpen])
 
   async function handleSignOut() {
     if (!auth) return
@@ -319,6 +342,11 @@ export default function DashboardPage() {
             {paymentError}
           </div>
         )}
+        {deleteError && (
+          <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            {deleteError}
+          </div>
+        )}
 
         {loadState === 'loading' && (
           <div className="flex justify-center py-20">
@@ -391,6 +419,7 @@ export default function DashboardPage() {
                   <th className={`${thClass} whitespace-nowrap`}>
                     Payment
                   </th>
+                  <th className={`${thClass} whitespace-nowrap`}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -445,6 +474,20 @@ export default function DashboardPage() {
                           busy={updatingId === row.id}
                           onSetStatus={handlePaymentStatus}
                         />
+                      </td>
+                      <td className={`${cellClass} whitespace-nowrap`}>
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(row)}
+                          disabled={deletingId === row.id}
+                          className={`rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+                            deletingId === row.id
+                              ? 'cursor-wait border-slate-200 bg-slate-100 text-slate-500'
+                              : 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100'
+                          }`}
+                        >
+                          {deletingId === row.id ? 'Deleting…' : 'Delete'}
+                        </button>
                       </td>
                     </tr>
                   )

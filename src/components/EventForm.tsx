@@ -322,8 +322,7 @@ export function EventForm({ onSubmit }: Props) {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold text-slate-800">Payment</h2>
         <p className="text-sm text-slate-600">
-          Scan the QR to pay. After payment, please enter your UPI/transaction reference in the
-          “Reference” field (optional but recommended).
+          Scan the QR to pay. After payment, please upload the payment success screenshot.
         </p>
         <div className="flex justify-center">
           <a
