@@ -58,13 +58,19 @@ const cellClass =
 const thClass =
   'sticky top-0 z-10 border-b border-slate-300 bg-slate-100 px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600'
 
-function PaymentProofCell({ row }: { row: RegistrationRecord }) {
+function PaymentProofCell({
+  row,
+  onOpen,
+}: {
+  row: RegistrationRecord
+  onOpen: (dataUrl: string) => void
+}) {
   const dataUrl = row.paymentScreenshotDataUrl ?? null
   if (!dataUrl) return <span className="text-slate-500">—</span>
   return (
     <button
       type="button"
-      onClick={() => row.__openPaymentProof?.(dataUrl)}
+      onClick={() => onOpen(dataUrl)}
       className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-sky-700 hover:bg-slate-50"
       title="Open payment proof"
     >
@@ -389,12 +395,6 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {filteredRows.map((row) => {
-                  // Attach an opener without changing the Firestore mapping type.
-                  const rowWithOpen = Object.assign(row, {
-                    __openPaymentProof: openPaymentProof,
-                  }) as RegistrationRecord & {
-                    __openPaymentProof: (dataUrl: string) => void
-                  }
                   const medical =
                     row.medicalConditions === 'yes' && row.medicalDetails
                       ? `Yes — ${row.medicalDetails}`
@@ -437,7 +437,7 @@ export default function DashboardPage() {
                         )}
                       </td>
                       <td className={`${cellClass} whitespace-nowrap`}>
-                        <PaymentProofCell row={rowWithOpen} />
+                        <PaymentProofCell row={row} onOpen={openPaymentProof} />
                       </td>
                       <td className={`${cellClass} whitespace-nowrap`}>
                         <PaymentToggle
