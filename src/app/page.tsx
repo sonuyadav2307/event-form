@@ -10,10 +10,10 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  async function handleSubmit(data: FormData) {
+  async function handleSubmit(data: FormData, paymentScreenshot?: File | null) {
     setSubmitError(null)
     try {
-      await saveRegistration(data)
+      await saveRegistration(data, paymentScreenshot)
       setSubmitted(true)
     } catch {
       setSubmitError('Something went wrong. Please try again.')

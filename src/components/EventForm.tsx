@@ -6,10 +6,12 @@ import type { FormData } from '@/types/form'
 import logo from "@/assets/logo.png"
 import paymentQR from "@/assets/paymentQR.jpeg"
 
-type Props = { onSubmit: (data: FormData) => Promise<void> }
+type Props = { onSubmit: (data: FormData, paymentScreenshot?: File | null) => Promise<void> }
 
 export function EventForm({ onSubmit }: Props) {
   const [loading, setLoading] = useState(false)
+  const [paymentScreenshot, setPaymentScreenshot] = useState<File | null>(null)
+  const [paymentScreenshotError, setPaymentScreenshotError] = useState<string | null>(null)
   const [form, setForm] = useState<FormData>({
     fullName: '',
     age: '',
@@ -29,12 +31,29 @@ export function EventForm({ onSubmit }: Props) {
     setForm((prev) => ({ ...prev, ...f }))
   }
 
+  function setScreenshot(file: File | null) {
+    const MAX_BYTES = 2 * 1024 * 1024
+    if (!file) {
+      setPaymentScreenshot(null)
+      setPaymentScreenshotError(null)
+      return
+    }
+    if (file.size > MAX_BYTES) {
+      setPaymentScreenshot(null)
+      setPaymentScreenshotError('File must be 2MB or less.')
+      return
+    }
+    setPaymentScreenshot(file)
+    setPaymentScreenshotError(null)
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.consent) return
     if (!form.fullName.trim() || !form.mobile.trim()) return
+    if (paymentScreenshotError) return
     setLoading(true)
-    await onSubmit(form)
+    await onSubmit(form, paymentScreenshot)
     setLoading(false)
   }
 
@@ -276,6 +295,9 @@ export function EventForm({ onSubmit }: Props) {
           Scan the QR to pay. After payment, please enter your UPI/transaction reference in the
           “Reference” field (optional but recommended).
         </p>
+        <p className="text-sm text-slate-600">
+          After making payment, upload a screenshot of the payment success page.
+        </p>
         <div className="flex justify-center">
           <a
             href={paymentQR.src}
@@ -292,6 +314,23 @@ export function EventForm({ onSubmit }: Props) {
             />
           </a>
         </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">
+            Upload payment screenshot <span className="text-slate-500">(Optional)</span>
+          </span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
+            className="block w-full text-sm text-slate-700 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+          />
+          {paymentScreenshot?.name && (
+            <p className="mt-1 text-xs text-slate-500">Selected: {paymentScreenshot.name}</p>
+          )}
+          {paymentScreenshotError && (
+            <p className="mt-1 text-xs text-red-600">{paymentScreenshotError}</p>
+          )}
+        </label>
         <p className="text-xs text-slate-500">Tip: Tap the QR to open and zoom.</p>
       </section>
 

@@ -58,6 +58,35 @@ const cellClass =
 const thClass =
   'sticky top-0 z-10 border-b border-slate-300 bg-slate-100 px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600'
 
+function PaymentProofCell({ row }: { row: RegistrationRecord }) {
+  const url = row.paymentScreenshotUrl ?? null
+  if (!url) return <span className="text-slate-500">—</span>
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 text-xs font-medium text-sky-700 hover:bg-slate-50"
+    >
+      View
+      <svg
+        className="h-3.5 w-3.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2}
+        aria-hidden
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M13.5 6H18m0 0v4.5M18 6l-7.5 7.5M10.5 7.5H7.2A1.2 1.2 0 006 8.7v8.1A1.2 1.2 0 007.2 18h8.1a1.2 1.2 0 001.2-1.2v-3.3"
+        />
+      </svg>
+    </a>
+  )
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [user, setUser] = useState<User | null>(null)
@@ -338,6 +367,7 @@ export default function DashboardPage() {
                   <th className={thClass}>Emergency</th>
                   <th className={thClass}>Medical</th>
                   <th className={thClass}>Consent</th>
+                  <th className={`${thClass} whitespace-nowrap`}>Payment Proof</th>
                   <th className={`${thClass} whitespace-nowrap`}>
                     Payment
                   </th>
@@ -385,6 +415,9 @@ export default function DashboardPage() {
                         ) : (
                           <span className="text-red-600">No</span>
                         )}
+                      </td>
+                      <td className={`${cellClass} whitespace-nowrap`}>
+                        <PaymentProofCell row={row} />
                       </td>
                       <td className={`${cellClass} whitespace-nowrap`}>
                         <PaymentToggle
