@@ -3,8 +3,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Event registrations: anyone can create (submit form), no read/update/delete
     match /registrations/{docId} {
-      allow create: if true;
-      allow read, update, delete: if false;
+      // Public form: no paid status on create, or explicitly unpaid only
+      allow create: if !request.resource.data.keys().hasAny(['paymentStatus'])
+        || request.resource.data.paymentStatus == 'unpaid';
+      allow read: if request.auth != null;
+      // Admins may only change paymentStatus (paid / unpaid)
+      allow update: if request.auth != null
+        && request.resource.data.paymentStatus in ['paid', 'unpaid']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus']);
+      allow delete: if false;
     }
   }
 }

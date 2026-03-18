@@ -18,6 +18,7 @@ export async function saveRegistration(data: FormData): Promise<string> {
     medicalConditions: data.medicalConditions,
     medicalDetails: data.medicalDetails || null,
     consent: data.consent,
+    paymentStatus: 'unpaid',
     createdAt: serverTimestamp(),
   })
   return docRef.id

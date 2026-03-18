@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getFirestore } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -22,4 +23,8 @@ if (typeof window !== "undefined") {
 }
 const db = getFirestore(app);
 
-export { app, db };
+/** Auth is only available in the browser (undefined on server / API routes). */
+const auth =
+  typeof window !== "undefined" ? getAuth(app) : undefined;
+
+export { app, db, auth };

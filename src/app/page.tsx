@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { EventForm } from '@/components/EventForm'
 import { saveRegistration } from '@/lib/firestore'
 import type { FormData } from '@/types/form'
+import Link from 'next/link'
 
 export default function Home() {
   const [submitted, setSubmitted] = useState(false)
@@ -45,6 +46,11 @@ export default function Home() {
               </div>
             )}
             <EventForm onSubmit={handleSubmit} />
+            <div className="mt-6 text-center text-sm text-slate-600">
+              <Link href="/login" className="font-medium text-sky-700 hover:text-sky-800">
+                Admin login
+              </Link>
+            </div>
           </>
         )}
       </div>

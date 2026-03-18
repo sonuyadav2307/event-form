@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Image from 'next/image'
 import type { FormData } from '@/types/form'
 import logo from "@/assets/logo.png"
+import paymentQR from "@/assets/paymentQR.jpeg"
 
 type Props = { onSubmit: (data: FormData) => Promise<void> }
 
@@ -52,6 +53,7 @@ export function EventForm({ onSubmit }: Props) {
           priority
         />
       </div>
+
       {/* 2. Participant Details */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
@@ -263,6 +265,34 @@ export function EventForm({ onSubmit }: Props) {
           />
           <span className="text-sm font-medium text-slate-700">I Agree</span>
         </label>
+      </section>
+
+      <hr className="border-slate-200" />
+
+      {/* Payment */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-slate-800">Payment</h2>
+        <p className="text-sm text-slate-600">
+          Scan the QR to pay. After payment, please enter your UPI/transaction reference in the
+          “Reference” field (optional but recommended).
+        </p>
+        <div className="flex justify-center">
+          <a
+            href={paymentQR.src}
+            target="_blank"
+            rel="noreferrer"
+            className="block w-full max-w-[240px] overflow-hidden rounded-xl border border-slate-200 bg-white"
+            aria-label="Open payment QR in new tab"
+          >
+            <Image
+              src={paymentQR}
+              alt="Payment QR code"
+              className="h-auto w-full object-contain"
+              priority={false}
+            />
+          </a>
+        </div>
+        <p className="text-xs text-slate-500">Tip: Tap the QR to open and zoom.</p>
       </section>
 
       <div className="pt-2">

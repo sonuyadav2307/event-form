@@ -34,10 +34,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { reference, ...rest } = body
+    const { reference } = body
     const docRef = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
-      ...rest,
+      fullName: body.fullName,
+      age: body.age,
+      gender: body.gender,
+      mobile: body.mobile,
+      email: body.email ?? null,
+      city: body.city,
       reference: reference ?? null,
+      emergencyName: body.emergencyName,
+      emergencyPhone: body.emergencyPhone,
+      medicalConditions: body.medicalConditions,
+      medicalDetails: body.medicalDetails ?? null,
+      consent: body.consent,
+      paymentStatus: 'unpaid',
       createdAt: serverTimestamp(),
     })
 
