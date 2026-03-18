@@ -57,7 +57,7 @@ export function EventForm({ onSubmit }: Props) {
       {/* 2. Participant Details */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
-          2. Participant Details
+          Participant Details
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="sm:col-span-2">
@@ -162,7 +162,7 @@ export function EventForm({ onSubmit }: Props) {
       {/* 3. Emergency Contact */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
-          3. Emergency Contact
+          Emergency Contact
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label>
@@ -199,7 +199,7 @@ export function EventForm({ onSubmit }: Props) {
       {/* 4. Health Declaration */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
-          4. Health Declaration
+          Health Declaration
         </h2>
         <div>
           <span className="mb-2 block text-sm font-medium text-slate-700">
@@ -249,7 +249,7 @@ export function EventForm({ onSubmit }: Props) {
       {/* 7. Consent / Declaration */}
       <section className="space-y-4">
         <h2 className="text-lg font-semibold text-slate-800">
-          7. Consent / Declaration
+          Consent / Declaration
         </h2>
         <blockquote className="rounded-lg border-l-4 border-slate-300 bg-slate-50 py-2 pl-4 pr-3 text-slate-700">
           &ldquo;I confirm that I am medically fit to participate in this event
